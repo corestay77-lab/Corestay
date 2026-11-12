@@ -1,17 +1,21 @@
 // FILE TUNGGAL AKSES SUPER ADMIN. Letakkan di: app/superadmin/route.ts. Tidak mengubah file lain.
 // Halaman: /superadmin. Tidak perlu pengaturan di Vercel. Username: superadmin.
+// Bila database masih kosong (belum pernah /setup), saat login pertama file ini membuat tabel dan satu klien demo
+// ("demo", semua aplikasi berlisensi 10 tahun). Setelah itu halaman /setup tidak bisa dipakai lagi (aturan bawaan /setup).
 // Setelah lolos, server menerbitkan sesi Owner biasa (4 jam) untuk klien yang dipilih lewat Kode klien.
 import { NextResponse } from "next/server";
 import { createHash, scryptSync, timingSafeEqual } from "node:crypto";
 import { sql } from "@/lib/db";
-import { signSession } from "@/lib/auth";
+import { randomBytes } from "node:crypto";
+import { hashPassword, signSession } from "@/lib/auth";
+import { SCHEMA } from "@/lib/schema";
 import { audit } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
 // Login Super Admin tertanam di sini (password disimpan sebagai hash, bukan teks biasa).
 const SA_USER = "superadmin";
-const SA_HASH = "9dc7064e4155d0c2128219f80e4d45aa:2e72b4399ca210ddc1a6644ae634800b3df5fb7244edcb0f616338630729d9b9f810edb817278ad803788151f7ba5a237aa12b05534855de9ec35a068ee38585";
+const SA_HASH = "aa342b014fe11c068bbfb093a2ab6ceb:5fa65401d60836ce3d54e32418a999c47ee8dd084578e43acb55299b3e32b5865426aa3d5991b47056ab931d554341bef3ce03600eb05eefde55fca641995338";
 const checkSuper = (username: string, password: string) => {
   const d = (x: string) => createHash("sha256").update(x).digest();
   const u = timingSafeEqual(d(username), d(SA_USER));
@@ -19,6 +23,23 @@ const checkSuper = (username: string, password: string) => {
   const a = scryptSync(password, salt, 64), k = Buffer.from(hex, "hex");
   return u && a.length === k.length && timingSafeEqual(a, k);
 };
+// Menyiapkan tabel + klien demo hanya bila belum ada klien sama sekali.
+async function ensureFirstTenant() {
+  let n = -1;
+  try { const [c] = await sql.query("select count(*)::int as n from tenants"); n = Number(c?.n); } catch { n = -1; }
+  if (n > 0) return;
+  for (const st of SCHEMA) await sql.query(st);
+  const [c2] = await sql.query("select count(*)::int as n from tenants");
+  if (Number(c2?.n) > 0) return;
+  let tid = "";
+  try {
+    const [t] = await sql.query("insert into tenants(slug,name) values('demo','CoreStay Demo') returning id"); tid = t.id;
+    const [h] = await sql.query("insert into hotels(tenant_id,name,city) values($1,'Hotel Demo','Jakarta') returning id", [tid]);
+    await sql.query("insert into users(tenant_id,username,pass_hash,role,hotel_ids) values($1,'owner',$2,'owner',$3)", [tid, hashPassword(randomBytes(24).toString("hex")), [h.id]]);
+    const [l] = await sql.query("insert into licenses(tenant_id,code,expires_at) values($1,$2,current_date + 3650) returning id", [tid, "CS-" + randomBytes(5).toString("hex").toUpperCase()]);
+    for (const m of ["hris", "finance", "crm", "ops", "budget"]) await sql.query("insert into license_modules(license_id,module) values($1,$2)", [l.id, m]);
+  } catch (e) { if (tid) await sql.query("delete from tenants where id=$1", [tid]).catch(() => {}); throw e; }
+}
 const fail = () => NextResponse.json({ ok: false }, { status: 401 });
 // 10 kegagalan password dalam 10 menit menutup jalur ini sementara.
 const locked = async () => {
@@ -57,6 +78,7 @@ export async function POST(req: Request) {
       await sql.query("insert into audit_log(tenant_id,user_id,action,detail) values(null,null,$1,$2)", ["superadmin.fail2", JSON.stringify({ slug })]).catch(() => {});
       return NextResponse.json({ ok: false, msg: "Username atau password salah." }, { status: 401 });
     }
+    await ensureFirstTenant();
     // Kode klien dikosongkan = klien pertama yang dibuat.
     const [t] = slug ? await sql.query("select id from tenants where slug=$1 and status='active'", [slug]) : await sql.query("select id from tenants where status='active' order by created_at limit 1");
     if (!t) return NextResponse.json({ ok: false, msg: "Klien tidak ditemukan. Periksa Kode klien." }, { status: 404 });
