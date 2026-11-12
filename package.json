@@ -1,6 +1,6 @@
 {
   "name": "corestay-app",
-  "version": "0.2.0",
+  "version": "0.7.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,17 +9,24 @@
     "tenant": "node --env-file=.env.local scripts/new-tenant.mjs"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.87",
     "@neondatabase/serverless": "^1.0.2",
+    "@vercel/blob": "^2.3.0",
+    "ai": "^7.0.123",
     "lucide-react": "^0.468.0",
     "next": "^15.5.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "xlsx": "^0.18.5"
+    "resend": "^4.0.1",
+    "xlsx": "^0.18.5",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^22.15.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
+    "tailwindcss": "^4",
     "typescript": "^5.8.3"
   }
 }

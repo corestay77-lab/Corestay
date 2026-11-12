@@ -27,6 +27,7 @@ export default async function Home() {
           return on.includes(k)
             ? <Link key={k} href={m.href} className="cs-glass cs-app" style={style}><span className="cs-ic">{m.icon}</span><b>{m.name}</b><small>{m.desc}</small>{!m.ready && <span className="cs-badge" style={{ alignSelf: "flex-start" }}>Segera hadir</span>}</Link>
             : <div key={k} className="cs-glass cs-app cs-off" style={style}><span className="cs-ic">🔒</span><b>{m.name}</b><small>Belum aktif pada lisensi</small></div>; })}
+        {mg && <Link href="/executive" className="cs-glass cs-app" style={{ ["--c" as string]: "#f1c768" }}><span className="cs-ic">📈</span><b>Dashboard Executive</b><small>Ringkasan dan isu utama dari semua aplikasi</small></Link>}
         {mg && <Link href="/team" className="cs-glass cs-app" style={{ ["--c" as string]: "#7c5cff" }}><span className="cs-ic">🔑</span><b>Kelola tim</b><small>Buat login Housekeeping, Engineering, Sales, dan tim lain</small></Link>}
       </div>
       {!keys.length && <p className="cs-mu">Belum ada aplikasi yang diberikan ke akun Anda. Hubungi admin hotel.</p>}

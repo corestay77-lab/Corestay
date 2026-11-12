@@ -7,6 +7,11 @@ import { MODULES } from "@/lib/modules";
 const fail = () => NextResponse.json({ ok: false }, { status: 401 });
 
 export async function POST(req: Request) {
+  try { return await handle(req); }
+  catch (e) { console.error("login", e); return NextResponse.json({ ok: false, error: "server" }, { status: 500 }); }
+}
+
+async function handle(req: Request) {
   const b = await req.json().catch(() => null);
   const slug = String(b?.slug || "").trim().toLowerCase(), username = String(b?.username || "").trim().toLowerCase(), password = String(b?.password || "");
   if (!slug || !username || !password) return fail();
