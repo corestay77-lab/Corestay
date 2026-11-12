@@ -20,10 +20,10 @@ const checkSuper = (username: string, password: string) => {
   return u && a.length === k.length && timingSafeEqual(a, k);
 };
 const fail = () => NextResponse.json({ ok: false }, { status: 401 });
-// 8 kegagalan dalam 15 menit menutup jalur ini sementara.
+// 10 kegagalan password dalam 10 menit menutup jalur ini sementara.
 const locked = async () => {
-  try { const [r] = await sql.query("select count(*)::int as n from audit_log where action='superadmin.fail' and at > now() - interval '15 minutes'"); return Number(r?.n) >= 8; }
-  catch { return true; }
+  try { const [r] = await sql.query("select count(*)::int as n from audit_log where action='superadmin.fail2' and at > now() - interval '10 minutes'"); return Number(r?.n) >= 10; }
+  catch { return false; }
 };
 
 const PAGE = `<!doctype html><html lang="id"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Super Admin · CoreStay</title>
@@ -41,7 +41,7 @@ button:disabled{opacity:.6}.e{color:#ff8b8b;font-size:14px;margin-top:12px}</sty
 <script>f.onsubmit=async function(ev){ev.preventDefault();b.disabled=true;e.textContent="";
 var r=await fetch("/superadmin",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(Object.fromEntries(new FormData(f)))});
 if(r.ok){location.href=(await r.json()).to||"/";return}b.disabled=false;
-e.textContent=r.status===401?"Kode klien, username, atau password salah.":r.status===429?"Terlalu banyak percobaan. Coba lagi beberapa menit lagi.":"Server belum siap. Periksa database dan pengaturan."}</script></html>`;
+var d=await r.json().catch(function(){return{}});e.textContent=d.msg||"Gagal masuk."}</script></html>`;
 
 export async function GET() {
   return new Response(PAGE, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
@@ -52,19 +52,21 @@ export async function POST(req: Request) {
     const b = await req.json().catch(() => null);
     const slug = String(b?.slug || "").trim().toLowerCase(), username = String(b?.username || "").trim().toLowerCase(), password = String(b?.password || "");
     if (!username || !password) return fail();
-    if (await locked()) return NextResponse.json({ ok: false, error: "locked" }, { status: 429 });
+    if (await locked()) return NextResponse.json({ ok: false, msg: "Terlalu banyak percobaan. Coba lagi 10 menit lagi." }, { status: 429 });
+    if (!checkSuper(username, password)) {
+      await sql.query("insert into audit_log(tenant_id,user_id,action,detail) values(null,null,$1,$2)", ["superadmin.fail2", JSON.stringify({ slug })]).catch(() => {});
+      return NextResponse.json({ ok: false, msg: "Username atau password salah." }, { status: 401 });
+    }
     // Kode klien dikosongkan = klien pertama yang dibuat.
     const [t] = slug ? await sql.query("select id from tenants where slug=$1 and status='active'", [slug]) : await sql.query("select id from tenants where status='active' order by created_at limit 1");
+    if (!t) return NextResponse.json({ ok: false, msg: "Klien tidak ditemukan. Periksa Kode klien." }, { status: 404 });
     // Masuk sebagai Owner aktif klien itu (sesi Owner biasa, sama seperti yang diterbitkan halaman Masuk).
-    const [o] = t ? await sql.query("select id,username from users where tenant_id=$1 and role='owner' and active order by username limit 1", [t.id]) : [];
-    if (!t || !o || !checkSuper(username, password)) {
-      await sql.query("insert into audit_log(tenant_id,user_id,action,detail) values(null,null,$1,$2)", ["superadmin.fail", JSON.stringify({ slug })]).catch(() => {});
-      return fail();
-    }
+    const [o] = await sql.query("select id,username from users where tenant_id=$1 and role='owner' and active order by username limit 1", [t.id]);
+    if (!o) return NextResponse.json({ ok: false, msg: "Klien ini belum punya Owner yang aktif." }, { status: 404 });
     const res = NextResponse.json({ ok: true, to: "/" });
     res.cookies.set("cs", signSession({ uid: o.id, tid: t.id, role: "owner", name: o.username, exp: Date.now() + 4 * 3600e3 }),
       { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 4 * 3600 });
     await audit(t.id, o.id, "superadmin.login", { by: SA_USER });
     return res;
-  } catch (e) { console.error("superadmin", e); return NextResponse.json({ ok: false, error: "server" }, { status: 500 }); }
+  } catch (e) { console.error("superadmin", e); return NextResponse.json({ ok: false, msg: "Server belum siap: " + String((e as Error)?.message || e).slice(0, 160) }, { status: 500 }); }
 }
