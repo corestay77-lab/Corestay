@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { randomBytes, timingSafeEqual } from "node:crypto";
+import { timingSafeEqual } from "node:crypto";
 import { sql } from "@/lib/db";
-import { hashPassword } from "@/lib/auth";
+import { createTenant } from "@/lib/tenants";
 import { SCHEMA } from "@/lib/schema";
 
 const bad = (error: string, status = 400) => NextResponse.json({ error }, { status });
@@ -20,20 +20,13 @@ export async function POST(req: Request) {
   if (!tenant || !hotel) return bad("Nama klien dan nama hotel wajib diisi.");
   if (!/^[a-z0-9._-]{3,30}$/.test(username)) return bad("Username 3-30 karakter: huruf kecil, angka, titik, strip.");
   if (password.length < 10) return bad("Password minimal 10 karakter.");
-  let tid = "";
   try {
     for (const st of SCHEMA) await sql.query(st);
     const [c] = await sql.query("select count(*)::int as n from tenants");
-    if (c.n > 0) return bad("Setup sudah pernah dijalankan. Klien berikutnya didaftarkan lewat Aplikasi Lisensi atau skrip.", 403);
-    const [t] = await sql.query("insert into tenants(slug,name) values($1,$2) returning id", [slug, tenant]); tid = t.id;
-    const [h] = await sql.query("insert into hotels(tenant_id,name,city) values($1,$2,$3) returning id", [tid, hotel, city || null]);
-    await sql.query("insert into users(tenant_id,username,pass_hash,role,hotel_ids) values($1,$2,$3,'owner',$4)", [tid, username, hashPassword(password), [h.id]]);
-    const code = "CS-" + randomBytes(5).toString("hex").toUpperCase();
-    const [l] = await sql.query("insert into licenses(tenant_id,code,expires_at) values($1,$2,current_date + 365) returning id", [tid, code]);
-    for (const m of MODS) await sql.query("insert into license_modules(license_id,module) values($1,$2)", [l.id, m]);
-    return NextResponse.json({ ok: true, slug, username, code });
+    if (c.n > 0) return bad("Setup sudah pernah dijalankan. Klien berikutnya didaftarkan lewat Aplikasi Lisensi (/admin).", 403);
+    const r = await createTenant({ slug, name: tenant, hotel, city, username, password, modules: MODS, days: 365 });
+    return NextResponse.json({ ok: true, slug, username, code: r.code });
   } catch (e) {
-    if (tid) await sql.query("delete from tenants where id=$1", [tid]).catch(() => {});
     return bad("Gagal menyiapkan database: " + String((e as Error)?.message || e), 500);
   }
 }

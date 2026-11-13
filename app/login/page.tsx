@@ -8,7 +8,7 @@ export default function Login() {
     const r = await fetch("/api/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(new FormData(e.currentTarget))) });
     if (r.ok) { location.href = (await r.json()).to || "/"; return; }
     setBusy(false);
-    setErr(r.status === 401 ? "Kode klien, username, atau password salah." : "Server belum siap: database atau pengaturan belum lengkap. Jika ini pemasangan baru, buka halaman /setup.");
+    setErr(r.status === 429 ? "Terlalu banyak percobaan. Coba lagi dalam 15 menit." : r.status === 401 ? "Kode klien, username, atau password salah." : "Server belum siap: database atau pengaturan belum lengkap. Jika ini pemasangan baru, buka halaman /setup.");
   }
   return (
     <div className="cs-page cs-login">

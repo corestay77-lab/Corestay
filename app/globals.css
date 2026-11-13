@@ -47,3 +47,14 @@ a.cs-app:hover{transform:translateY(-3px);border-color:var(--c)}
 .cs-dot{width:10px;height:10px;border-radius:50%;flex:none;margin-top:7px}
 .cs-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;position:relative}.cs-stats small{display:block;color:var(--cs-mu);font-size:12px}.cs-stats b{font-size:15px}
 .cs-hero .cs-chips{margin-top:14px}.cs-hero .cs-chip{text-decoration:none;background:rgba(255,255,255,.14)}
+.cs-tint{background:linear-gradient(160deg,color-mix(in srgb,var(--c) 26%,transparent),transparent 65%),var(--cs-card);border-color:color-mix(in srgb,var(--c) 38%,var(--cs-line))}
+.cs-kpi{position:relative;overflow:hidden}.cs-kic{position:absolute;right:12px;top:10px;font-size:22px;opacity:.9}
+.cs-kpi em,.cs-stats em{display:block;font-style:normal;font-size:12px;font-weight:700;margin-top:2px}.cs-stats em{display:inline;margin-left:4px}
+.cs-up{color:var(--cs-ok)}.cs-dn{color:var(--cs-bd)}
+.cs-duo{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-top:14px}.cs-duo>section:only-child{grid-column:1/-1}
+@media (max-width:720px){.cs-duo{grid-template-columns:1fr}}
+.cs-det{border-top:1px solid var(--cs-line);padding:10px 0;margin-top:8px}.cs-det summary{cursor:pointer;font-weight:600}
+.cs-bnav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));width:min(94vw,520px);display:flex;gap:2px;padding:6px;border-radius:22px;background:var(--cs-card);border:1px solid var(--cs-line);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 18px 44px -14px rgba(0,0,0,.6);z-index:30}
+.cs-bnav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 2px;border-radius:16px;color:var(--cs-mu);text-decoration:none;font-size:11px;font-weight:600;position:relative}
+.cs-bnav a span{font-size:19px}.cs-bnav a.on{background:linear-gradient(135deg,var(--cs-gd),var(--cs-gd2));color:#1a1405}
+.cs-bnav a i{position:absolute;top:2px;right:16%;background:var(--cs-bd);color:#fff;border-radius:99px;font-size:10px;font-style:normal;padding:0 5px;font-weight:800}

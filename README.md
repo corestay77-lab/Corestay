@@ -1,9 +1,9 @@
-# CoreStay App v0.7.0
+# CoreStay App v0.9.2
 
 Platform multi-hotel: login per klien, lisensi per modul, satu database Postgres dengan penanda klien (tenant_id).
 Tahap saat ini: kerangka + modul **HRIS & Payroll** (dari CoreStay People v0.9.3) + modul **Finance** (dari CoreStay Finance v1.2.0) + modul **Ops** (dari CoreStay Ops v1.0.0) + modul **Sales & CRM** (dari CoreStay CRM v1.8.0) + modul **Hotel Budget**.
 Semua modul sudah tergabung; Supabase tidak dipakai lagi.
-Aplikasi Lisensi (admin pembuat lisensi) menyusul; sementara klien didaftarkan lewat skrip.
+Aplikasi Lisensi (admin) ada di `/admin`.
 
 ## Pasang
 1. Unggah ke GitHub, impor di Vercel.
@@ -15,6 +15,13 @@ Aplikasi Lisensi (admin pembuat lisensi) menyusul; sementara klien didaftarkan l
 `npm run tenant -- grup-a "Grup A" "Hotel A" "Jakarta" owner PasswordKuat123 hris,finance,crm,ops,budget 365`
 Membuat tabel inti, klien, hotel pertama, pengguna Owner, dan lisensi. Login di /login: kode klien, username, password.
 Tabel HRIS (hr_*) dibuat otomatis saat modul HRIS pertama kali dibuka.
+
+## Aplikasi Lisensi (`/admin`)
+1. Di Vercel isi env `ADMIN_USER` dan `ADMIN_PASSWORD` (minimal 14 karakter), lalu Redeploy. Login admin terpisah dari login klien.
+2. Buka `/admin/login`. Dari sini Anda: membuat klien baru (klien, hotel pertama, Owner, modul, masa berlaku), mengubah modul dan masa berlaku, menambah hotel, mereset password pengguna, menambah Owner, serta menangguhkan atau mengaktifkan klien.
+3. Klien yang ditangguhkan atau lisensinya kedaluwarsa langsung tidak bisa memakai modul (termasuk absen QR HRIS); data tidak dihapus.
+4. Pembatasan percobaan login (login klien dan admin): 5 kegagalan untuk satu akun atau 20 dari satu IP mengunci 15 menit.
+5. `/setup` tetap ada hanya untuk klien pertama bila Anda belum mengisi ADMIN_USER; setelah Aplikasi Lisensi dipakai, hapus `SETUP_KEY` dari Vercel.
 
 ## Membuat klien pertama dari browser (tanpa komputer)
 1. Di Vercel, Settings, Environment Variables: isi `SETUP_KEY` (acak, minimal 12 karakter), lalu Redeploy.
@@ -46,7 +53,7 @@ Tabel HRIS (hr_*) dibuat otomatis saat modul HRIS pertama kali dibuka.
 - Halaman: `/ops` (Owner bisa berpindah hotel lewat pemilih hotel di bawah layar; GM dan staf hanya hotel yang ditetapkan). API: `/api/ops/state`.
 - Satu dokumen Ops per hotel (tabel `ops_doc`, dibuat otomatis); tersimpan otomatis, dengan pengaman versi antar pengguna.
 - Identitas mengikuti login CoreStay: Owner dan GM = peran GM di Ops. Staf = peran sesuai anggota tim Ops yang kolom "Username CoreStay"-nya sama dengan username login; bila belum ada yang cocok, staf hanya bisa melihat (Viewer). Pemilih pengguna di dalam Ops dimatikan.
-- Hotel baru mulai kosong: daftar kamar bawaan (60 kamar, lantai 2-7) dipertahankan karena Ops belum punya menu tambah kamar; aset, jadwal PM, inventori, dan tim dikosongkan untuk diisi sendiri. Tombol "Kembalikan data contoh" dihapus.
+- Hotel baru mulai dengan 60 kamar bawaan (lantai 2-7) sebagai titik awal; GM mengubahnya di Pengaturan, tab Kamar (tambah kamar per lantai dan rentang nomor, ubah tipe, hapus, atau mulai dari nol); aset, jadwal PM, inventori, dan tim dikosongkan untuk diisi sendiri. Tombol "Kembalikan data contoh" dihapus.
 - Keterbatasan: hak per jabatan di dalam Ops (GM, supervisor, teknisi) dijaga oleh tampilan di browser seperti aplikasi aslinya, belum oleh server. Dokumen dibatasi 4 MB per hotel.
 
 ## Peta Sales & CRM di platform
@@ -64,6 +71,7 @@ Tabel HRIS (hr_*) dibuat otomatis saat modul HRIS pertama kali dibuka.
 - Draft `corestay-hotel-budget-draft` tetap dibaca HRIS lewat file (Sinkron di HRIS); sambungan langsung belum dibuat.
 
 ## Dashboard Executive (`/executive`, Owner dan GM)
+Lima tab seperti mockup: Dashboard (filter Hari ini, 7 hari, Bulan ini; angka utama dengan perubahan vs periode lalu; grafik pendapatan harian; cincin okupansi; isu utama; highlight departemen; urutan kartu mengikuti peran), Aplikasi, Approval (tagihan vendor Menunggu di Finance dan payroll yang diajukan di HRIS), Laporan, dan Pengaturan (akun, lisensi read-only, Kelola tim). Persetujuan tetap dilakukan di aplikasi masing-masing.
 - Membaca data asli semua modul berlisensi: Finance (pendapatan bulan ini, GOP, kas, piutang, utang vendor), Ops (okupansi, kamar, work order), Sales CRM (pipeline, rating, ulasan negatif), HRIS (kehadiran hari ini, karyawan aktif), Budget (laporan final terakhir).
 - Isu utama dihitung otomatis dengan aturan sederhana (misalnya work order Urgent terbuka, piutang lewat 30 hari, ulasan negatif belum dibalas, kehadiran di bawah 85%). Ambang batasnya ada di `lib/exec/summary.ts` dan mudah disesuaikan.
 - Owner bisa memilih satu hotel atau semua hotel. Saldo kas selalu tingkat klien (rekening Finance dipakai bersama).
@@ -75,4 +83,5 @@ Tabel HRIS (hr_*) dibuat otomatis saat modul HRIS pertama kali dibuka.
 - Uji wajib sebelum klien nyata: pengguna klien A tidak bisa membaca atau mengubah data klien B (HRIS, backup, absen QR).
 - PWA/manifest HRIS dan versi desktop (Electron) tidak ikut digabung.
 - Data HRIS lama dari proyek terpisah belum dimigrasikan (gunakan restore backup lewat Pengaturan, bila diperlukan).
-- Pembatasan percobaan login dan ganti password sendiri belum ada.
+- Ganti password sendiri (oleh pengguna) belum ada; sementara password direset oleh Owner (Kelola tim) atau admin (/admin).
+- Admin platform memakai satu akun dari environment (belum ada banyak admin).
