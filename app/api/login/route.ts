@@ -14,16 +14,22 @@ export async function POST(req: Request) {
 async function handle(req: Request) {
   const b = await req.json().catch(() => null);
   const slug = String(b?.slug || "").trim().toLowerCase(), username = String(b?.username || "").trim().toLowerCase(), password = String(b?.password || "");
-  if (!slug || !username || !password) return fail();
-  const [t] = await sql.query("select id from tenants where slug=$1 and status='active'", [slug]);
-  const [u] = t ? await sql.query("select id,pass_hash,role,username from users where tenant_id=$1 and lower(username)=$2 and active", [t.id, username]) : [];
-  if (!t || !u || !checkPassword(password, u.pass_hash)) return fail();
+  if (!username || !password) return fail();
+  // Kode klien boleh kosong: akun dicari di semua klien aktif, lalu dipastikan lewat password.
+  // Bila diisi, pencarian dibatasi pada klien itu (cara lama tetap berlaku).
+  const rows = await sql.query(
+    "select u.id,u.pass_hash,u.role,u.username,u.tenant_id from users u join tenants t on t.id=u.tenant_id where t.status='active' and u.active and lower(u.username)=$1 and ($2::text='' or t.slug=$2::text) limit 10",
+    [username, slug]);
+  const ok = rows.filter((r) => checkPassword(password, r.pass_hash));
+  if (ok.length > 1) return NextResponse.json({ ok: false, error: "ambiguous" }, { status: 409 });
+  if (ok.length === 0) return fail();
+  const u = ok[0], tid = u.tenant_id as string;
   // Pengguna (staf, GM, Owner) yang hanya punya satu aplikasi langsung masuk ke aplikasi itu; selainnya ke beranda.
-  const mods = await userModules(t.id, u.id, u.role);
+  const mods = await userModules(tid, u.id, u.role);
   const to = mods.length === 1 ? (MODULES[mods[0]]?.href || "/m/" + mods[0]) : "/";
   const res = NextResponse.json({ ok: true, to });
-  res.cookies.set("cs", signSession({ uid: u.id, tid: t.id, role: u.role, name: u.username, exp: Date.now() + 12 * 3600e3 }),
+  res.cookies.set("cs", signSession({ uid: u.id, tid, role: u.role, name: u.username, exp: Date.now() + 12 * 3600e3 }),
     { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 12 * 3600 });
-  await audit(t.id, u.id, "login");
+  await audit(tid, u.id, "login");
   return res;
 }
