@@ -1,9 +1,9 @@
-# CoreStay App v0.9.2
+# CoreStay App v1.1.0
 
 Platform multi-hotel: login per klien, lisensi per modul, satu database Postgres dengan penanda klien (tenant_id).
 Tahap saat ini: kerangka + modul **HRIS & Payroll** (dari CoreStay People v0.9.3) + modul **Finance** (dari CoreStay Finance v1.2.0) + modul **Ops** (dari CoreStay Ops v1.0.0) + modul **Sales & CRM** (dari CoreStay CRM v1.8.0) + modul **Hotel Budget**.
 Semua modul sudah tergabung; Supabase tidak dipakai lagi.
-Aplikasi Lisensi (admin) ada di `/admin`.
+Aplikasi Lisensi (admin) adalah proyek terpisah: `corestay-license`.
 
 ## Pasang
 1. Unggah ke GitHub, impor di Vercel.
@@ -16,17 +16,23 @@ Aplikasi Lisensi (admin) ada di `/admin`.
 Membuat tabel inti, klien, hotel pertama, pengguna Owner, dan lisensi. Login di /login: kode klien, username, password.
 Tabel HRIS (hr_*) dibuat otomatis saat modul HRIS pertama kali dibuka.
 
-## Aplikasi Lisensi (`/admin`)
-1. Di Vercel isi env `ADMIN_USER` dan `ADMIN_PASSWORD` (minimal 14 karakter), lalu Redeploy. Login admin terpisah dari login klien.
-2. Buka `/admin/login`. Dari sini Anda: membuat klien baru (klien, hotel pertama, Owner, modul, masa berlaku), mengubah modul dan masa berlaku, menambah hotel, mereset password pengguna, menambah Owner, serta menangguhkan atau mengaktifkan klien.
-3. Klien yang ditangguhkan atau lisensinya kedaluwarsa langsung tidak bisa memakai modul (termasuk absen QR HRIS); data tidak dihapus.
-4. Pembatasan percobaan login (login klien dan admin): 5 kegagalan untuk satu akun atau 20 dari satu IP mengunci 15 menit.
-5. `/setup` tetap ada hanya untuk klien pertama bila Anda belum mengisi ADMIN_USER; setelah Aplikasi Lisensi dipakai, hapus `SETUP_KEY` dari Vercel.
+## Aplikasi Lisensi (proyek terpisah)
+Pembuatan klien, lisensi, dan modul dilakukan dari **corestay-license** (dipasang sebagai proyek Vercel sendiri, memakai `DATABASE_URL` yang sama dengan aplikasi ini). Aplikasi ini tidak lagi memuat halaman admin.
+- Klien yang ditangguhkan atau lisensinya kedaluwarsa langsung tidak bisa memakai modul (termasuk absen QR HRIS); data tidak dihapus.
+- Pembatasan percobaan login: 5 kegagalan untuk satu akun atau 20 dari satu IP mengunci 15 menit.
+- Bila login gagal, buka `/status` untuk melihat pengaturan mana yang belum benar.
 
 ## Membuat klien pertama dari browser (tanpa komputer)
 1. Di Vercel, Settings, Environment Variables: isi `SETUP_KEY` (acak, minimal 12 karakter), lalu Redeploy.
 2. Buka `https://NAMA-APP.vercel.app/setup`, isi kunci setup, kode klien, nama klien, hotel, username Owner, dan password (minimal 10 karakter).
 3. Halaman ini hanya berfungsi bila belum ada klien. Setelah selesai, hapus `SETUP_KEY` dari Vercel.
+
+## Cara login
+Halaman Masuk memakai tiga isian: **Nama hotel**, **Login**, dan **Password**.
+- Nama hotel dicocokkan ke klien (boleh nama hotel, nama klien, atau kode klien). Nama hotel harus unik di seluruh platform; sistem menolak nama yang sudah dipakai klien lain saat hotel didaftarkan.
+- GM dan staf yang terikat ke satu hotel hanya bisa masuk lewat nama hotelnya sendiri; Owner bisa lewat nama hotel mana pun miliknya.
+- Setelah login, staf yang hanya punya satu aplikasi langsung masuk ke aplikasi itu (HRIS, Finance, Ops, CRM, atau Budget). Yang punya beberapa aplikasi, serta Owner dan GM, masuk ke beranda Executive.
+- Data tiap klien terpisah (penanda klien di database); data Ops, CRM, dan HRIS juga terpisah per hotel. Superadmin masuk lewat Aplikasi Lisensi, bukan lewat halaman ini.
 
 ## Alur pengguna
 1. Admin CoreStay membuat klien, lisensi, dan Owner (sementara lewat skrip).

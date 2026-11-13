@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   try {
     for (const st of SCHEMA) await sql.query(st);
     const [c] = await sql.query("select count(*)::int as n from tenants");
-    if (c.n > 0) return bad("Setup sudah pernah dijalankan. Klien berikutnya didaftarkan lewat Aplikasi Lisensi (/admin).", 403);
+    if (c.n > 0) return bad("Setup sudah pernah dijalankan. Klien berikutnya didaftarkan lewat Aplikasi Lisensi (corestay-license).", 403);
     const r = await createTenant({ slug, name: tenant, hotel, city, username, password, modules: MODS, days: 365 });
     return NextResponse.json({ ok: true, slug, username, code: r.code });
   } catch (e) {

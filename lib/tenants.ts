@@ -17,6 +17,12 @@ export async function createTenant(o: NewTenant): Promise<{ id: string; code: st
   if (!mods.length) throw new Error("Pilih minimal satu modul.");
   const days = Math.max(1, Math.min(3650, Math.floor(o.days) || 365));
   for (const st of SCHEMA) await sql.query(st);
+  await sql.query("create unique index if not exists hotels_name_uq on hotels(lower(name))").catch(() => {});
+  // Login memakai nama hotel, jadi nama harus unik di seluruh platform (tidak boleh sama dengan hotel, nama klien, atau kode klien lain).
+  const taken = async (x: string) => (await sql.query("select 1 from hotels where lower(name)=lower($1) union all select 1 from tenants where lower(slug)=lower($1) or lower(name)=lower($1)", [x])).length > 0;
+  if (await taken(slug)) throw new Error("Kode klien sudah dipakai atau sama dengan nama hotel/klien lain.");
+  if (await taken(o.name.trim())) throw new Error("Nama klien sudah dipakai atau sama dengan nama hotel lain.");
+  if (await taken(o.hotel.trim())) throw new Error("Nama hotel sudah dipakai klien lain. Tambahkan kota atau ciri lain agar unik, misalnya \"Grand Hotel Bandung\".");
   if ((await sql.query("select 1 from tenants where slug=$1", [slug])).length) throw new Error("Kode klien sudah dipakai.");
   let tid = "";
   try {

@@ -6,10 +6,11 @@ export default function Setup() {
   const [msg, setMsg] = useState(""), [ok, setOk] = useState(false), [busy, setBusy] = useState(false);
   async function go(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault(); setBusy(true); setMsg("");
-    const r = await fetch("/api/setup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(new FormData(e.currentTarget))) });
+    const fd = Object.fromEntries(new FormData(e.currentTarget));
+    const r = await fetch("/api/setup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(fd) });
     const d = await r.json().catch(() => ({}));
     setBusy(false); setOk(r.ok);
-    setMsg(r.ok ? `Selesai. Login di halaman Masuk dengan kode klien "${d.slug}" dan username "${d.username}".` : d.error || "Gagal.");
+    setMsg(r.ok ? `Selesai. Di halaman Masuk isi Nama hotel "${String(fd.hotel)}", Login "${d.username}", dan password yang Anda buat.` : d.error || "Gagal.");
   }
   return (
     <div className="cs-page"><main className="cs-wrap" style={{ maxWidth: 520 }}>

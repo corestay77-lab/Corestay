@@ -16,6 +16,7 @@ export async function POST(req:Request){
   try{const b=await req.json(),name=String(b.name||'').trim();
     if(!name)return json({error:'Nama hotel wajib diisi'},400);
     if((await q(`select 1 from hr_hotel where tenant_id=$1 and lower(name)=lower($2)`,[a.tid,name])).length)return json({error:'Nama hotel sudah terdaftar'},409);
+    if((await sql.query('select 1 from hotels where lower(name)=lower($1) union all select 1 from tenants where id<>$2 and (lower(slug)=lower($1) or lower(name)=lower($1))',[name,a.tid])).length)return json({error:'Nama hotel sudah dipakai. Tambahkan kota atau ciri lain agar unik.'},409);
     const num=(v:any)=>Number.isFinite(Number(v))?Number(v):0,id=randomUUID(),doc=newHotelDoc(name,{lat:num(b.lat),lng:num(b.lng),radius:num(b.radius)||undefined,shift:b.shift||undefined,tz:b.tz||undefined});
     await sql.query('insert into hotels(id,tenant_id,name) values($1,$2,$3)',[id,a.tid,name]);
     try{await q(`insert into hr_hotel(id,name,data,version,qr,tenant_id) values($1,$2,$3::jsonb,1,$4,$5)`,[id,name,JSON.stringify(doc),doc.geo[name].qr,a.tid])}
