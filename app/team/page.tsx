@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Brand from "@/components/Brand";
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/data";
 import { MODULES } from "@/lib/modules";
@@ -10,8 +11,8 @@ export default async function Team() {
   const names = Object.fromEntries(Object.entries(MODULES).map(([k, m]) => [k, m.short]));
   return (
     <div className="cs-page"><main className="cs-wrap">
-      <div className="cs-top"><Link href="/" className="cs-ghost">‹ Beranda</Link><span className="cs-brand">CoreStay</span></div>
-      <section className="cs-hero"><h1>Tim hotel</h1><p>Buat login per departemen: Housekeeping, Engineering, Front Office, Sales, dan lainnya. Tiap login langsung masuk ke aplikasi departemennya.</p></section>
+      <div className="cs-top"><Link href="/" className="cs-ghost">‹ Beranda</Link><Brand /></div>
+      <section className="cs-hero"><h1>Tim hotel</h1><p>Buat login untuk Housekeeping, Engineering, Sales, dan tim lain. Tiap login langsung masuk ke aplikasi yang Anda pilihkan.</p></section>
       <TeamClient names={names} />
     </main></div>
   );

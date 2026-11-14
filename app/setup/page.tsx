@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Brand from "@/components/Brand";
 import { useState } from "react";
 
 export default function Setup() {
@@ -14,7 +15,7 @@ export default function Setup() {
   }
   return (
     <div className="cs-page"><main className="cs-wrap" style={{ maxWidth: 520 }}>
-      <div className="cs-top"><span className="cs-brand">CoreStay</span></div>
+      <div className="cs-top"><Brand /></div>
       <form className="cs-glass" onSubmit={go}>
         <h2 style={{ margin: 0, font: '700 22px "Playfair Display",Georgia,serif' }}>Setup klien pertama</h2>
         <p className="cs-mu" style={{ margin: "4px 0 0" }}>Hanya berfungsi selama belum ada klien. Perlu SETUP_KEY dari pengaturan Vercel.</p>

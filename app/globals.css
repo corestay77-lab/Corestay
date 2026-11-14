@@ -58,3 +58,40 @@ a.cs-app:hover{transform:translateY(-3px);border-color:var(--c)}
 .cs-bnav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 2px;border-radius:16px;color:var(--cs-mu);text-decoration:none;font-size:11px;font-weight:600;position:relative}
 .cs-bnav a span{font-size:19px}.cs-bnav a.on{background:linear-gradient(135deg,var(--cs-gd),var(--cs-gd2));color:#1a1405}
 .cs-bnav a i{position:absolute;top:2px;right:16%;background:var(--cs-bd);color:#fff;border-radius:99px;font-size:10px;font-style:normal;padding:0 5px;font-weight:800}
+/* ---- Halaman masuk mewah (selalu gelap agar logo putih terbaca) ---- */
+.cs-brandrow{display:inline-flex;align-items:center;gap:10px}.cs-brandrow img{display:block;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
+.au-page{--g1:#f3cf7a;--g2:#e0a63a;--t1:#19b5c9;--tx:#eef2ff;--mu:#a9b6d8;min-height:100vh;position:relative;overflow:hidden;color:var(--tx);font:15px/1.55 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(1100px 620px at 82% -12%,rgba(25,181,201,.30),transparent 60%),radial-gradient(900px 620px at -12% 18%,rgba(224,166,58,.20),transparent 60%),linear-gradient(160deg,#050a1c,#0b1740 55%,#0a1a3a);padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.au-page *{box-sizing:border-box}
+.au-page::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:46px 46px;-webkit-mask-image:radial-gradient(ellipse at 50% 30%,#000 25%,transparent 75%);mask-image:radial-gradient(ellipse at 50% 30%,#000 25%,transparent 75%);pointer-events:none}
+.au-orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55;pointer-events:none;animation:au-float 14s ease-in-out infinite}
+.au-orb.o1{width:340px;height:340px;background:#19b5c9;top:-80px;right:6%}.au-orb.o2{width:300px;height:300px;background:#e0a63a;bottom:-90px;left:4%;animation-delay:-5s;opacity:.4}.au-orb.o3{width:240px;height:240px;background:#5b3df0;top:38%;left:42%;animation-delay:-9s;opacity:.3}
+@keyframes au-float{0%,100%{transform:translate(0,0)}50%{transform:translate(24px,-28px)}}
+.au-wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;min-height:100vh;padding:32px 22px;display:grid;grid-template-columns:1.15fr .85fr;gap:46px;align-items:center}
+.au-hero{display:flex;flex-direction:column;gap:18px}
+.au-logo{width:min(360px,74vw);height:auto;filter:drop-shadow(0 18px 40px rgba(25,181,201,.28));animation:au-in .8s ease both}
+.au-hero h1{margin:0;font:700 clamp(28px,4.2vw,46px)/1.12 "Playfair Display",Georgia,serif;background:linear-gradient(90deg,#fff,#dfe8ff 55%,var(--g1));-webkit-background-clip:text;background-clip:text;color:transparent;animation:au-in .8s .1s ease both}
+.au-hero p{margin:0;max-width:470px;color:var(--mu);font-size:16px;animation:au-in .8s .18s ease both}
+.au-feats{display:flex;flex-wrap:wrap;gap:9px;animation:au-in .8s .26s ease both}
+.au-feats span{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:99px;font-size:13px;font-weight:600;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.au-trust{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:8px;color:var(--mu);font-size:14px;animation:au-in .8s .34s ease both}
+.au-trust li:before{content:"";display:inline-block;width:8px;height:8px;margin-right:10px;border-radius:50%;background:linear-gradient(135deg,var(--g1),var(--t1))}
+.au-card{position:relative;padding:30px 28px;border-radius:28px;background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.17);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);box-shadow:0 40px 80px -30px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.12);animation:au-in .8s .2s ease both}
+.au-card:before{content:"";position:absolute;left:28px;right:28px;top:0;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--g1),var(--t1),transparent)}
+.au-card h2{margin:0;font:700 25px "Playfair Display",Georgia,serif}.au-card .sub{margin:4px 0 6px;color:var(--mu)}
+.au-field{display:block;margin-top:16px;font-size:13px;font-weight:600;color:var(--mu)}
+.au-field .box{position:relative;margin-top:6px}
+.au-field input{display:block;width:100%;padding:14px 15px;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:#fff;font:500 15px Inter,system-ui,sans-serif;transition:border-color .2s,box-shadow .2s,background .2s}
+.au-field input::placeholder{color:rgba(255,255,255,.38)}
+.au-field input:focus{outline:none;border-color:var(--t1);background:rgba(255,255,255,.1);box-shadow:0 0 0 4px rgba(25,181,201,.2)}
+.au-eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--mu);font:600 12px Inter,system-ui,sans-serif;padding:8px 10px;cursor:pointer;border-radius:10px}.au-eye:hover{color:#fff}
+.au-btn{position:relative;overflow:hidden;display:block;width:100%;margin-top:22px;padding:15px;border:0;border-radius:15px;background:linear-gradient(135deg,var(--g1),var(--g2));color:#1a1405;font:800 16px Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 18px 34px -16px var(--g2);transition:transform .15s,box-shadow .15s}
+.au-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 24px 40px -16px var(--g2)}.au-btn:disabled{opacity:.65}
+.au-btn:after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-20deg);animation:au-shine 4.5s ease-in-out infinite}
+@keyframes au-shine{0%,60%{left:-60%}100%{left:130%}}
+.au-err{margin:14px 0 0;padding:10px 13px;border-radius:12px;background:rgba(255,107,129,.12);border:1px solid rgba(255,107,129,.4);color:#ffb3c0;font-size:14px}
+.au-foot{margin:18px 0 0;text-align:center;font-size:13px;color:var(--mu)}.au-foot a{color:var(--g1);text-decoration:none;font-weight:600}.au-foot a:hover{text-decoration:underline}
+.au-copy{position:absolute;z-index:1;bottom:14px;left:0;right:0;text-align:center;font-size:12px;color:rgba(169,182,216,.7)}
+@keyframes au-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.au-page a:focus-visible,.au-page button:focus-visible{outline:3px solid var(--t1);outline-offset:2px}
+@media (max-width:860px){.au-wrap{grid-template-columns:1fr;gap:26px;padding:26px 18px 56px;min-height:auto}.au-hero{align-items:flex-start}.au-logo{width:min(250px,62vw)}.au-trust{display:none}.au-card{padding:26px 22px}}
+@media (prefers-reduced-motion:reduce){.au-page *,.au-page *:before,.au-page *:after{animation:none!important;transition:none!important}}

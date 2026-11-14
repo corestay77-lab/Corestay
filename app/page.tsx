@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Brand from "@/components/Brand";
 import { redirect } from "next/navigation";
 import { currentUser, tenantInfo, userModules } from "@/lib/data";
 import { MODULES } from "@/lib/modules";
@@ -7,15 +8,13 @@ export default async function Home() {
   const s = await currentUser(); if (!s) redirect("/login");
   const [t, on] = await Promise.all([tenantInfo(s.tid), userModules(s.tid, s.uid, s.role)]);
   if (!t) redirect("/login");
-  // Staf yang hanya punya satu aplikasi (misalnya Housekeeping) langsung diarahkan ke aplikasi itu, tanpa melihat beranda.
-  if (s.role === "staff" && on.length === 1) { const m = MODULES[on[0]]; if (m?.ready) redirect(m.href); }
   const mg = s.role !== "staff", RL: Record<string, string> = { owner: "Owner", gm: "General Manager", staff: "Staf" };
   // Staf hanya melihat aplikasi yang diberikan; Owner/GM juga melihat modul yang belum berlisensi (terkunci).
   const keys = Object.keys(MODULES).filter((k) => mg || on.includes(k));
   return (
     <div className="cs-page"><main className="cs-wrap">
       <div className="cs-top">
-        <span className="cs-brand">CoreStay</span>
+        <Brand />
         <form method="post" action="/api/logout"><button className="cs-ghost">Keluar</button></form>
       </div>
       <section className="cs-hero">

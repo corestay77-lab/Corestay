@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Brand from "@/components/Brand";
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/data";
 import { MODULES } from "@/lib/modules";
@@ -25,7 +26,7 @@ export default async function Executive({ searchParams }: { searchParams: Promis
   const bw = d.trend.length > 8 ? 9 : 36, step = 320 / d.trend.length;
   return (
     <div className="cs-page"><main className="cs-wrap" style={{ paddingBottom: 120 }}>
-      <div className="cs-top"><span className="cs-brand">CoreStay Executive</span><span className="cs-badge">{owner ? "Owner" : "General Manager"} · {s.name}</span></div>
+      <div className="cs-top"><Brand suffix="Executive" /><span className="cs-badge">{owner ? "Owner" : "General Manager"} · {s.name}</span></div>
 
       {tab === "dashboard" && <>
         <section className="cs-hero">

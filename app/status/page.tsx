@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Brand from "@/components/Brand";
 
 export const dynamic = "force-dynamic";
 type C = { ok: boolean; l: string; h: string };
@@ -25,7 +26,7 @@ export default async function Status() {
   const { checks, clients } = await run(), next = checks.find((c) => !c.ok);
   return (
     <div className="cs-page"><main className="cs-wrap" style={{ maxWidth: 560 }}>
-      <div className="cs-top"><span className="cs-brand">CoreStay</span><Link href="/login" className="cs-ghost">‹ Ke halaman masuk</Link></div>
+      <div className="cs-top"><Brand /><Link href="/login" className="cs-ghost">‹ Ke halaman masuk</Link></div>
       <section className="cs-hero"><h1>Status pengaturan</h1><p>{next ? "Ada pengaturan yang belum lengkap." : `Semua siap. ${clients} klien terdaftar.`}</p></section>
       <section className="cs-glass">
         {checks.map((c) => <div key={c.l} className="cs-issue"><span className="cs-dot" style={{ background: c.ok ? "var(--cs-ok)" : "var(--cs-bd)" }} /><div>{c.ok ? "✓" : "✗"} {c.l}</div></div>)}
